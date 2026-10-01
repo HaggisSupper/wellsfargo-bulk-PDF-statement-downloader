@@ -35,9 +35,6 @@ let interceptor = function (method, url, async) {
 			cancelButton.onclick = () => {
 				document.body.removeChild(cancelButton);
 				document.body.removeChild(button);
-				delete button;
-				delete statements;
-				delete waitTime;
 			};
             document.body.appendChild(cancelButton);
             button.onclick = () => { 
@@ -57,10 +54,6 @@ let interceptor = function (method, url, async) {
                 });
 				document.body.removeChild(button);
 				document.body.removeChild(cancelButton);
-				delete button;
-				delete cancelButton;
-				delete statements;
-				delete waitTime;
             };
         });
 
