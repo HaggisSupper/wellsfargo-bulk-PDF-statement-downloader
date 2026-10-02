@@ -1,0 +1,44 @@
+name: Hosted bookmarklet validation
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hosted-bookmarklet-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate JavaScript and README bookmarklet
+        run: |
+          git diff --check
+          node --check original-source.js
+          node <<'JS'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const readme = fs.readFileSync('README.md', 'utf8');
+          const match = readme.match(/```\s*\n(javascript:[^\n]+)\n```/);
+          if (!match) throw new Error('README bookmarklet was not found');
+          new vm.Script(decodeURIComponent(match[1]), { filename: 'README bookmarklet' });
+          console.log('Validated bookmarklet syntax without executing it.');
+          JS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bookmarklet
+          path: |
+            README.md
+            original-source.js
+          if-no-files-found: error
+          retention-days: 14
